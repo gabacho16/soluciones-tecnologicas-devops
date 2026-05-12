@@ -20,14 +20,13 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install Flask dependency
         run: |
           pip install flask==2.3.3
 
-      - name: Test Flask import
+      - name: Verify Flask import
         run: |
           python -c "from flask import Flask; print('Flask import successful')"
-
 
   deploy:
     runs-on: ubuntu-latest
@@ -46,22 +45,31 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
-      - name: Compress application files
+      - name: Compress application
         run: |
           zip -r app.zip .
 
       - name: Upload application to S3
         run: |
-          aws s3 cp app.zip s3://devops-bucket-${{ secrets.AWS_ACCESS_KEY_ID }}/app.zip || true
+          aws s3 cp app.zip s3://devops-bucket-${{ github.run_id }}/app.zip || true
 
-      - name: Deploy using SSM
+      - name: Deploy via SSM
         run: |
+
           INSTANCE_ID=$(aws ec2 describe-instances \
+          --filters "Name=instance-state-name,Values=running" \
           --query "Reservations[*].Instances[*].InstanceId" \
           --output text)
+
+          echo "Using instance: $INSTANCE_ID"
+
+          if [ -z "$INSTANCE_ID" ]; then
+            echo "No running EC2 instances found."
+            exit 1
+          fi
 
           aws ssm send-command \
             --instance-ids $INSTANCE_ID \
             --document-name "AWS-RunShellScript" \
-            --parameters commands=["echo Deployment successful"] \
+            --parameters commands=["echo Deployment completed successfully"] \
             --region us-east-1
