@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+
+# AWS
+.aws/
+*.pem
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml
+*.tar
