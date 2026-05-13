@@ -1,0 +1,14 @@
+{
+  "Rules": [
+    {
+      "ID": "DeleteObjectsAfter30Days",
+      "Filter": {
+        "Prefix": ""
+      },
+      "Status": "Enabled",
+      "Expiration": {
+        "Days": 30
+      }
+    }
+  ]
+}
